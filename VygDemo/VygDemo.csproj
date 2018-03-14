@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\VgySdk\VgySdk.csproj" />
+    <PackageReference Include="VgySDK" Version="1.0.0" />
   </ItemGroup>
 
 </Project>
