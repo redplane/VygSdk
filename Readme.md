@@ -27,5 +27,6 @@ For more detail information about APIs, you can refer to [VGY API document](http
     }
 
 ###  Issues report
-- Any issue report, please create it on github, please.
-- Any code update, please make CR.
+- Any issue report, please create it on github.
+
+
