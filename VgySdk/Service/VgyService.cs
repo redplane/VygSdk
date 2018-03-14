@@ -1,19 +1,21 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using VgySdk.Constant;
+using VgySdk.Interfaces;
+using VgySdk.Models;
 
 namespace VgySdk.Service
 {
-    public class VgyService
+    public class VgyService : IVgyService
     {
         #region Properties
 
         /// <summary>
-        /// User key.
+        ///     User key.
         /// </summary>
         private string _userKey;
 
@@ -22,14 +24,15 @@ namespace VgySdk.Service
         #region Methods
 
         /// <summary>
-        /// Upload file asynchronously.
+        ///     Upload file asynchronously.
         /// </summary>
         /// <param name="bytes"></param>
         /// <param name="contentType"></param>
         /// <param name="fileName"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<HttpResponseMessage> UploadAsync(byte[] bytes, string contentType, string fileName, CancellationToken cancellationToken)
+        public async Task<T> UploadAsync<T>(byte[] bytes, string contentType, string fileName,
+            CancellationToken cancellationToken) where T : VgyResponseBase
         {
             #region Parameters validation
 
@@ -65,7 +68,27 @@ namespace VgySdk.Service
                 var httpResponseMessage = await httpClient.PostAsync(new Uri(VygUrlConstant.UrlUploadFile),
                     multipartFormDataContent, cancellationToken);
 
-                return httpResponseMessage;
+                // Response is invalid.
+                if (httpResponseMessage == null || !httpResponseMessage.IsSuccessStatusCode)
+                    return null;
+
+                var httpContent = httpResponseMessage.Content;
+                if (httpContent == null)
+                    return null;
+
+                // Http content is invalid.
+                var szHttpContent = await httpContent.ReadAsStringAsync();
+                if (string.IsNullOrEmpty(szHttpContent))
+                    return null;
+
+                var result = JsonConvert.DeserializeObject<T>(szHttpContent);
+                if (result is VgySuccessResponse && result.IsError)
+                    return null;
+
+                if (result is VgyErrorResponse && !result.IsError)
+                    return null;
+
+                return result;
             }
             finally
             {
@@ -74,7 +97,7 @@ namespace VgySdk.Service
         }
 
         /// <summary>
-        /// Set user key.
+        ///     Set user key.
         /// </summary>
         /// <param name="userKey"></param>
         public void SetUserKey(string userKey)
