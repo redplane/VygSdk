@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Threading;
+using VgySdk.Models;
 using VgySdk.Service;
 
 namespace VygDemo
@@ -17,7 +18,7 @@ namespace VygDemo
             var fileName = Path.GetFileName(fullPath);
 
             var bytes = File.ReadAllBytes(fullPath);
-            vygService.UploadAsync(bytes, "image/png", fileName, CancellationToken.None).Wait();
+            var vgyResponse = vygService.UploadAsync<VgyResponseBase>(bytes, "image/png", fileName, CancellationToken.None).Result;
             Console.WriteLine("Done");
             Console.ReadLine();
         }
